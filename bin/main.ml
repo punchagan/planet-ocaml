@@ -79,7 +79,13 @@ let () =
   let sources = parse_sources yaml_str in
   Printf.printf "Loaded %d sources\n%!" (List.length sources);
 
-  let feeds = List.map River.fetch sources in
+  let feeds = List.filter_map (fun (src : River.source) ->
+    match River.fetch src with
+    | feed -> Some feed
+    | exception exn ->
+      Printf.eprintf "[SKIP] %s: %s\n%!" src.name (Printexc.to_string exn);
+      None
+  ) sources in
   let posts = River.posts feeds in
   Printf.printf "Total posts: %d\n%!" (List.length posts);
 
