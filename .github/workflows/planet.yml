@@ -1,0 +1,58 @@
+name: Build OCaml Planet feed
+
+on:
+  schedule:
+    # Run every night at 02:00 UTC
+    - cron: "0 2 * * *"
+  # Allow manual trigger from the Actions tab
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # ── 1. Check out the repository ──────────────────────────────
+      - uses: actions/checkout@v4
+
+      # ── 2. Install dune (self-contained static binary) ────────────
+      - name: Install dune
+        run: |
+          curl -fsSL https://get.dune.build/install | sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      # ── 3. Build ─────────────────────────────────────────────────
+      - name: Build
+        run: dune build
+
+      # ── 4. Generate the feed ─────────────────────────────────────
+      - name: Generate feed.xml
+        run: |
+          mkdir -p public
+          dune exec -- bin/main.exe \
+            --output public/feed.xml \
+            --title "OCaml Planet" \
+            --id "https://planet.ocaml.org/feed.xml"
+
+      # ── 5. Upload as GitHub Pages artifact ───────────────────────
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
