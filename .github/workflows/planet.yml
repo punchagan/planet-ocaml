@@ -4,7 +4,6 @@ on:
   schedule:
     # Run every night at 02:00 UTC
     - cron: "0 2 * * *"
-  # Allow manual trigger from the Actions tab
   workflow_dispatch:
 
 permissions:
@@ -17,33 +16,31 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # ── 1. Check out the repository ──────────────────────────────
       - uses: actions/checkout@v4
 
-      # ── 2. Install dune (self-contained static binary) ────────────
-      - name: Install dune
-        run: |
-          curl -fsSL https://get.dune.build/install | sh
-          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - name: Cache build dir
+        uses: actions/cache@v4
+        with:
+          path: _build
+          key: build-dir-${{ runner.os }}-${{ hashFiles('dune-project', 'dune.lock/lock.dune') }}
 
-      # ── 3. Build ─────────────────────────────────────────────────
-      - name: Build
-        run: dune build
+      - name: Set up dune and build
+        uses: ocaml-dune/setup-dune@v1
+        with:
+          steps: "install-dune install-depexts build"
 
-      # ── 4. Generate the feed ─────────────────────────────────────
-      - name: Generate feed.xml
+      - name: Generate feed
         run: |
-          mkdir -p public
+          mkdir -p web
           dune exec -- bin/main.exe \
-            --output public/feed.xml \
+            --output web/feed.xml \
             --title "OCaml Planet" \
             --id "https://punchagan.github.io/planet-ocaml/feed.xml"
 
-      # ── 5. Upload as GitHub Pages artifact ───────────────────────
-      - name: Upload Pages artifact
+      - name: Upload to GitHub Pages
         uses: actions/upload-pages-artifact@v3
         with:
-          path: public
+          path: web
 
   deploy:
     needs: build
@@ -53,6 +50,6 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
-      - name: Deploy to GitHub Pages
+      - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
