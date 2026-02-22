@@ -1,0 +1,19 @@
+(version 1.7.0)
+
+(build
+ (all_platforms
+  ((action
+    (progn
+     (when %{pkg-self:dev} (run dune subst))
+     (run dune build -p %{pkg-self:name} -j %{jobs}))))))
+
+(depends
+ (all_platforms
+  (ocaml dune ptime uri xmlm)))
+
+(source
+ (fetch
+  (url
+   https://github.com/Cumulus/Syndic/releases/download/v1.7.0/syndic-1.7.0.tbz)
+  (checksum
+   sha256=7c4526ccc5159640b8782e2fc20bba33ba7191f8a1f743991bcee474c59f8003)))
