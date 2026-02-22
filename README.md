@@ -33,3 +33,11 @@ dune exec -- bin/main.exe
 
 Requires [dune](https://dune.build) — dependencies are managed via
 `dune pkg` and pinned in `dune.lock`.
+
+## License
+
+MIT
+
+---
+
+*This project was built with [Claude](https://claude.ai).*
