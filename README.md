@@ -36,7 +36,7 @@ Requires [dune](https://dune.build) — dependencies are managed via
 
 ## License
 
-MIT
+WTFPL
 
 ---
 
