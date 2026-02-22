@@ -37,7 +37,7 @@ jobs:
           dune exec -- bin/main.exe \
             --output public/feed.xml \
             --title "OCaml Planet" \
-            --id "https://planet.ocaml.org/feed.xml"
+            --id "https://punchagan.github.io/planet-ocaml/feed.xml"
 
       # ── 5. Upload as GitHub Pages artifact ───────────────────────
       - name: Upload Pages artifact
