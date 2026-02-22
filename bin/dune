@@ -9,5 +9,4 @@
   lwt
   lwt.unix
   ptime.clock.os
-  uri
-  threads.posix))
+  uri))

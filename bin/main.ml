@@ -4,9 +4,6 @@
    fetches every feed concurrently via River, and writes a single Atom
    feed using Syndic.Atom.
 
-   River.fetch is synchronous (calls Lwt_main.run internally), so feeds
-   are fetched in parallel using OCaml threads.
-
    Build  : dune build
    Run    : ./_build/default/bin/main.exe [OPTIONS]
 *)
@@ -38,8 +35,13 @@ let parse_sources content =
           | Some (`String s) -> Some s
           | _                -> None
         in
-        (match get "name", get "feed" with
-         | Some name, Some feed -> Some { name; feed }
+        let disabled =
+          match List.assoc_opt "disabled" fields with
+          | Some (`Bool true) -> true
+          | _ -> false
+        in
+        (match get "name", get "url" with
+         | Some name, Some feed when not disabled -> Some { name; feed }
          | _ -> None)
       | _ -> None
     ) items
@@ -61,22 +63,11 @@ let fetch_url_sync url =
   )
 
 (* ───────────────────────────────────────────────────────────────────
-   Parallel feed fetching
-   River.fetch calls Lwt_main.run internally, so it must run in its
-   own OS thread — not within another Lwt_main.run.
+   Feed fetching
+   River.fetch calls Lwt_main.run internally; since Lwt has a single
+   global scheduler, concurrent calls from multiple threads are not
+   allowed.  We fetch sequentially — fine for a nightly batch job.
    ─────────────────────────────────────────────────────────────────── *)
-
-let parallel_filter_map f xs =
-  (* Launch one thread per source, collect results via an array. *)
-  let n       = List.length xs in
-  let results = Array.make n None in
-  let threads =
-    List.mapi (fun i x ->
-      Thread.create (fun () -> results.(i) <- f x) ()
-    ) xs
-  in
-  List.iter Thread.join threads;
-  Array.to_list results |> List.filter_map Fun.id
 
 let fetch_one src =
   let river_src = { River.name = src.name; url = src.feed } in
@@ -124,8 +115,8 @@ let () =
   let sources = parse_sources yaml_str in
   Printf.printf "Loaded %d sources\n%!" (List.length sources);
 
-  (* 2. Fetch all feeds concurrently in threads ------------------------- *)
-  let feeds = parallel_filter_map fetch_one sources in
+  (* 2. Fetch all feeds ------------------------------------------------- *)
+  let feeds = List.filter_map fetch_one sources in
   Printf.printf "Fetched %d feeds successfully\n%!" (List.length feeds);
 
   (* 3. Collect and deduplicate posts via River -------------------------- *)
