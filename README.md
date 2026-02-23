@@ -11,15 +11,15 @@ entry content, published nightly to GitHub Pages:
 
 **https://punchagan.github.io/planet-ocaml/feed.xml**
 
-It is particularly useful with
-[elfeed-offline](https://github.com/punchagan/elfeed-offline), which syncs
-feed content for offline reading in Emacs.
+It is particularly useful with feed readers like
+[elfeed](https://github.com/skeeto/elfeed/) and
+[elfeed-offline](https://github.com/punchagan/elfeed-offline)
 
 ## How it works
 
 - Source list is pulled from
   [ocaml.org's planet-sources.yml](https://github.com/ocaml/ocaml.org/blob/main/data/planet-sources.yml)
-- Feeds are fetched using [River](https://github.com/yawaramin/re-web) and
+- Feeds are fetched using [River](https://github.com/tarides/river) and
   aggregated with [Syndic](https://github.com/Cumulus/Syndic)
 - A GitHub Actions workflow runs nightly, generates `feed.xml`, and publishes
   it via GitHub Pages
