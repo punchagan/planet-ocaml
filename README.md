@@ -2,7 +2,7 @@
 
 A personal Atom feed aggregator for OCaml blogs.
 
-[planet.ocaml.org](https://planet.ocaml.org) aggregates the OCaml community's
+[ocaml.org/planet.xml](https://ocaml.org/planet.xml) aggregates the OCaml community's
 blogs, but its feed only includes summaries — not full post content. This makes
 it awkward to use with feed readers, especially offline ones.
 
